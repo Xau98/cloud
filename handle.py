@@ -185,13 +185,20 @@ def getListRetore(user):
             mang.append(info)"""
 def getListData(acc):
     path = acc.get('path')
-    if(verificationAccount(acc)):
+    if(True):
         arr = os.listdir(path)
         mang =[]
+        for x in arr:
+            size = os.path.getsize(path + "/" + x)
+            info = {
+                "name": x,
+                "size": size
+            }
+            mang.append(info)
 
 
         list ={
-        "list":arr
+        "list2":mang
         }
         print(list)
         return json.dumps(list)
