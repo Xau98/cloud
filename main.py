@@ -94,20 +94,8 @@ def Logout():
     except:
            return "False"
 #==================Upload File===============================
-
-@app.route('/uploadfile', methods = ['GET', 'POST'])
-def handle_request():
-    id = request.form.to_dict().get('id')
-    pathsave = request.form.to_dict().get('pathsave')
-    path0 ='/root/Bkav/Data/'
-    if(handle.verificationAccount(request.form.to_dict())):
-        try:
-             path = os.path.join(path0, id)
-             os.mkdir(path)
-        except:
-            print("folder exit")
-
-        if(pathsave=="false"):
+"""
+if(pathsave=="false"):
             try:
                  # create name File
                  now = datetime.now()
@@ -122,16 +110,34 @@ def handle_request():
                  imagefile = request.files['uploaded_file']
                  filename = werkzeug.utils.secure_filename(imagefile.filename)
                  imagefile.save(os.path.join(path1,filename))
+                 print (path1)
                  return path1
             except:
                 print("file exit . error")
         else:
-                 # Upload File
-                 print(pathsave)
-                 imagefile = request.files['uploaded_file']
-                 filename = werkzeug.utils.secure_filename(imagefile.filename)
-                 imagefile.save(os.path.join(pathsave,filename))
-                 return pathsave
+"""
+@app.route('/uploadfile', methods = ['GET', 'POST'])
+def handle_request():
+    id = request.form.to_dict().get('id')
+    pathsave = request.form.to_dict().get('pathsave')
+    path0 ='/root/Bkav/Data/'
+    if(handle.verificationAccount(request.form.to_dict())):
+        try:
+             path = os.path.join(path0, id)
+             os.mkdir(path)
+        except:
+            print("folder exit")
+        print(pathsave)
+        try:
+
+            os.mkdir(os.path.join(path, pathsave))
+        except:
+            print("folder exit")
+
+        imagefile = request.files['uploaded_file']
+        filename = werkzeug.utils.secure_filename(imagefile.filename)
+        imagefile.save(os.path.join(pathsave,filename))
+        return pathsave
     return "False"
 
 
@@ -203,6 +209,6 @@ def getListRestore():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     app.debug= True
-    app.run(host="0.0.0.0", port=2405)
+    app.run(host="0.0.0.0", port=2406)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
