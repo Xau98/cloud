@@ -130,14 +130,17 @@ def handle_request():
         print(pathsave)
         try:
 
-            os.mkdir(os.path.join(path, pathsave))
+            path1 = os.path.join(path, pathsave)
+            os.mkdir(path1)
         except:
             print("folder exit")
 
         imagefile = request.files['uploaded_file']
         filename = werkzeug.utils.secure_filename(imagefile.filename)
-        imagefile.save(os.path.join(pathsave,filename))
-        return pathsave
+        path2 = path+"/"+pathsave
+        imagefile.save(os.path.join(path2,filename))
+
+        return path2
     return "False"
 
 
@@ -178,8 +181,11 @@ def GetListBackup():
 
 @app.route('/getbackuplast', methods=['GET', 'POST'])
 def GetBackupLast():
+    try:
         acc = request.json
-        return  handle.backuplast(acc)
+        return handle.backuplast(acc)
+    except:
+        return "chưa có lần backup nào "
 
 #/root/Bkav/Data/3/Data20210424_083153
 @app.route('/getlistdata', methods =['GET', 'POST'])

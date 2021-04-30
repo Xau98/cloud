@@ -114,6 +114,7 @@ def removeBackup(acc):
     path = acc.get('pathsave')
     nameFolder = acc.get('namefolder')
     id_history = acc.get('id_history')
+    print(path, nameFolder)
     if(verificationAccount(acc)):
          #delete foldersplit
         os.rmdir(os.path.join(path,nameFolder))
@@ -156,6 +157,7 @@ def backuplast(acc):
         for record in cur.fetchall():
             print(record[0])
             return str(record[0])
+        return "chưa có lần backup nào "
 
 def getListRetore(user):
       id = user.get('id')
@@ -253,8 +255,8 @@ def insert(sql, val):
 
 def getTimeNow():
     now = datetime.now()
-    # dd/mm/YY H:M:S
-    dt_string = now.strftime(" %S:%M:%H %d/%m/%Y")
+    # %H:%M:%S %d/%m/%Y
+    dt_string = now.strftime("%H:%M:%S %d/%m/%Y")
     return dt_string
 
 # plain_text_password ; string
