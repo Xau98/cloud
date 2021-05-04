@@ -215,6 +215,6 @@ def getListRestore():
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     app.debug= True
-    app.run(host="0.0.0.0", port=2406)
+    app.run(host="0.0.0.0", port=2405)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

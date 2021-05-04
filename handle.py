@@ -45,17 +45,16 @@ def logintokent(user):
     sql_login = "select * from databaseIOT.account where id_account = %s && token= %s "
     val_login = (id, token)
     cur.execute(sql_login, val_login)
-    list =[]
     for record in cur.fetchall():
-        account={
+        account = {
             "id": record[0],
-            "name": record[2],
-            "email": record[3],
+            "token": token,
+            "name": record[1],
+            "email": record[2],
             "date_create": record[6]
         }
-        list.append(account)
-        return json.dumps(list)
-    return "False"
+        print(account)
+    return json.dumps(account)
 
 def loginaccount(user):
     username = user.get('username')
@@ -80,7 +79,7 @@ def loginaccount(user):
             updateDB(sql_token, val_token)
             account = {
                  "id": record[0],
-                 "token":record[5],
+                 "token":token,
                  "name": record[1],
                  "email": record[2],
                  "date_create": record[6]
@@ -197,8 +196,6 @@ def getListData(acc):
                 "size": size
             }
             mang.append(info)
-
-
         list ={
         "list2":mang
         }
