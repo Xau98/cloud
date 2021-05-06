@@ -186,7 +186,7 @@ def getListRetore(user):
             mang.append(info)"""
 def getListData(acc):
     path = acc.get('path')
-    if(True):
+    if(verificationAccount(acc)):
         arr = os.listdir(path)
         mang =[]
         for x in arr:
