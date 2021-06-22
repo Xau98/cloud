@@ -152,7 +152,7 @@ def verifyemail():
 @app.route('/logintoken', methods=['POST'])
 def logintoken():
     acc = request.json
-    return handle.verificatiinonAccount(acc)
+    return handle.logintoken(acc)
 
 
 # INPUT :  json{username, password}

@@ -10,6 +10,7 @@ import uuid
 import random
 from datetime import datetime
 from flask import render_template
+import shutil
 
 # value return
 ERROR_EMPTY = "Empty"  # Kết quả trả về rỗng (client gửi data lên thiếu dữ liệu )
@@ -71,7 +72,7 @@ INSERT_TOKEN_BY_ID_ACCOUNT = "INSERT INTO " + TABLE_SAVE_TOKEN + " (id_account, 
 
 mydb = mysql.connector.connect(
     host="localhost",
-    user="servercloud2",
+    user="servercloud",
     password="123456a@A",
     auth_plugin='mysql_native_password'
 )
@@ -204,6 +205,7 @@ def verifyEmailAndUpdate(user):
         sql_update = "update " + TABLE_ACCOUNT + " set username = %s where id_account = %s limit %s"
         val_update = (username, id, LIMIT_QUERY)
     # Bkav Tiennvh:Xác tực Account
+    print("test")
     result_check_account = verificationAccount(user)
     if result_check_account == RETURN_TRUE:
         # Bkav Tiennvh:Xác thực mã code
@@ -300,8 +302,13 @@ def removeBackup(acc):
     print(path, nameFolder)
     verifi = verificationAccount(acc)
     if verifi:
-        # delete foldersplit
-        os.rmdir(os.path.join(path, nameFolder))
+
+        dir_path = path + "/" + nameFolder
+        try:
+            shutil.rmtree(dir_path)
+        except OSError as e:
+            print("Error: %s : %s" % (dir_path, e.strerror))
+
         # update mysql
         sql = "DELETE FROM databaseIOT.history_backup WHERE id_history =%s limit %s"
         val = (id_history, 1)
@@ -417,6 +424,27 @@ def renameBackup(acc):
         return "True"
     return verify
 
+
+def logintoken(user):
+    id = user.get(ID_ACCOUNT)
+    token = user.get(TOKEN)
+    verify = verificationAccount(user)
+    if verify:
+        cur1 = mydb.cursor()
+        sql_getkey = "select * from " + TABLE_ACCOUNT + " where id_account = %s limit %s "
+        val_getkey = (id, LIMIT_QUERY)
+        cur1.execute(sql_getkey, val_getkey)
+        for record_key in cur1.fetchall():
+            account = {
+                ID_ACCOUNT: id,
+                "name": record_key[1],
+                USERNAME: record_key[3],
+                'email': record_key[2],
+                TOKEN: token,
+                "date_create": record_key[6]
+            }
+            return convertJSON(200, True, account)
+        return verify
     # ====================================================
 
 
@@ -440,13 +468,19 @@ def checkCodeVerify(user):
             return convertJSON(1101, False, "Not code")
         if record[1] is None or compareTime(float(record[1]), TIME_VERYCODE) is not True:
             return convertJSON(1102, False, "Code expired ")
-        print(str(code) + "//" + str(record[0]) + "//" + str(code == record[0]))
         if str(code) == str(record[0]):
             val_update = (None, None, id, LIMIT_QUERY)
             updateDB(UPDATE_CODE_BY_ID_ACCOUNT, val_update)
             return RETURN_TRUE
         return convertJSON(1113, False, "Code wrong ")
     return convertJSON(1007, False, "Type is incorrect")
+
+
+"""
+Bkav Tiennvh: 
+
+ 
+"""
 
 
 # Xác thực account bằng token
@@ -458,15 +492,12 @@ def verificationAccount(user):
         return convertJSON(CODE_NULL, False, RETURN_NONE)
     if not id or not token:
         return convertJSON(CODE_EMPTY, False, ERROR_EMPTY)
-
     cur1 = mydb.cursor()
-    sql_getkey = "select password from " + TABLE_ACCOUNT + " where id_account = %s limit %s "
+    sql_getkey = "select * from " + TABLE_ACCOUNT + " where id_account = %s limit %s "
     val_getkey = (id, LIMIT_QUERY)
     cur1.execute(sql_getkey, val_getkey)
     for record_key in cur1.fetchall():
-
-        key = str(record_key[0])
-        print(key)
+        key = str(record_key[4])
         try:
             decode_token = jwt.decode(token, key, algorithms=['HS256'])
             print("Token is still valid and active" + str(decode_token))
