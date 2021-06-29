@@ -168,7 +168,10 @@ def loginAccount():
     # return "False"
 
 
-# return "False"
+@app.route('/verifypassword', methods=['POST'])
+def verifypassword():
+    user = request.json
+    return handle.verifyPassword(user)
 
 
 @app.route('/logout', methods=['POST'])

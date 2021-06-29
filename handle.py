@@ -52,10 +52,8 @@ LIMIT_QUERY = 1  # Giới hạn kết quả trả về của SQL
 SELECT_ACCOUNT_BY_USERNAME = "select * from " + TABLE_ACCOUNT + \
                              " where username = %s && is_active = %s limit %s"
 
-SELECT_ACCOUNT_BY_ID_ACCOUNT = "select username_account_IOT,password_account_IOT," \
-                               "name_company_account_IOT,level_account_IOT,timeout_account_IOT" \
-                               " from  " + TABLE_ACCOUNT + \
-                               "  where id_account_IOT = %s && is_active_account_IOT = %s limit %s"
+SELECT_ACCOUNT_BY_ID_ACCOUNT = "select * from  " + TABLE_ACCOUNT + \
+                               "  where id_account = %s && is_active = %s limit %s"
 
 UPDATE_PASSWORD_ACCOUNT = "update " + TABLE_ACCOUNT + \
                           " set password_account_IOT = %s  where id_account_IOT = %s limit %s"
@@ -232,7 +230,7 @@ def login(user):
         return convertJSON(CODE_EMPTY, False, ERROR_EMPTY)
     # Bkav Tiennvh:Check format
     if not checkStandard(password, PASSWORD):
-        return convertJSON(CODE_PASSWORD_NOT_SAFE, False, RETURN_PASSWORD_NOT_SAFE)
+        return convertJSON(CODE_PASSWORD_WRONG, False, RETURN_PASSWORD_WRONG)
     if not checkStandard(username, EMAIL):
         return convertJSON(CODE_INVALID_EMAIL, False, RETURN_INVALID_EMAIL)
 
@@ -268,8 +266,48 @@ def login(user):
     return convertJSON(CODE_USER_NOT_EXIT, False, RETURN_USER_NOT_EXIT)
 
 
+def verifyPassword(acc):
+    id = acc.get(ID_ACCOUNT)
+    password = acc.get(PASSWORD)
+    time_now = datetime.now().timestamp()
+    if password is None:
+        return convertJSON(CODE_NULL, False, RETURN_NONE)
+    # Bkav Tiennvh:Check format
+    if not checkStandard(password, PASSWORD):
+        return convertJSON(CODE_PASSWORD_WRONG, False, RETURN_PASSWORD_WRONG)
+    verify = verificationAccount(acc)
+    if verify:
+        val_login = (id, True, LIMIT_QUERY)
+        cur = mydb.cursor()
+        cur.execute(SELECT_ACCOUNT_BY_ID_ACCOUNT, val_login)
+        # Bkav Tiennvh:Check account
+        for record in cur.fetchall():
+            id = record[0]
+            key = record[4]
+            timeout = 60 * 60 * 24 * 2
+            # Bkav Tiennvh: Check password
+            # TODO : xem return cua check password
+            if not check_password(password, key):
+                return convertJSON(CODE_PASSWORD_WRONG, False, RETURN_PASSWORD_WRONG)
+            data_token = {ID_ACCOUNT: id, "namecompany": record[2], 'level': record[3],
+                          'exp': time_now + timeout}
+            # Bkav Tiennvh:Tạo token
+            token = jwt.encode(data_token, key, algorithm='HS256')
+            # insert token and active
+            account = {
+                ID_ACCOUNT: id,
+                "name": record[1],
+                USERNAME: record[3],
+                'email': record[2],
+                TOKEN: token,
+                "date_create": record[6]
+            }
+            return convertJSON(CODE_SUCCESS, True, account)
+        return convertJSON(CODE_USER_NOT_EXIT, False, RETURN_USER_NOT_EXIT)
+
+
 def logOut(acc):
-    id = acc.get('id')
+    id = acc.get(ID_ACCOUNT)
     verifi = verificationAccount(acc)
     if verifi:
         sql_token = "update databaseIOT.account set token = %s  where id_account= %s limit 1"
